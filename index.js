@@ -1,7 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = require('./talker');
-const { login, validateEmail, validatePassword } = require('./login');
+const login = require('./login');
+const { validateEmail, validatePassword } = require('./loginValidation');
+const {
+  tokenValidation,
+  nameValidation,
+  ageValidation,
+  talkValidation,
+  watchedAtValidation,
+  rateValidation,
+ } = require('./talkerValidation');
+ const createTalker = require('./createTalker');
 
 const app = express();
 app.use(bodyParser.json());
@@ -14,8 +24,23 @@ app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
 
+const loginValidation = [
+  validateEmail,
+  validatePassword,
+];
+
+const talkerValidations = [
+tokenValidation,
+nameValidation,
+ageValidation,
+talkValidation,
+watchedAtValidation,
+rateValidation,
+];
+
 app.use('/talker', router);
-app.post('/login', validateEmail, validatePassword, login);
+app.post('/login', loginValidation, login);
+app.post('/talker', talkerValidations, createTalker);
 
 app.listen(PORT, () => {
   console.log('Online');

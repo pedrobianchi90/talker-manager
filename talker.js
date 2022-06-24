@@ -11,6 +11,7 @@ const readTalker = (req, res, next) => {
   req.talkers = parse;
   next();
 };
+
 router.get('/', readTalker, (req, res) => {
   const { talkers } = req;
   res.status(200).json(talkers);
@@ -23,4 +24,5 @@ router.get('/:id', readTalker, (req, res) => {
   if (!currentTalker) return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
   res.status(200).json(currentTalker);
 });
+
 module.exports = router;
