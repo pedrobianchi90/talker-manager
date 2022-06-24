@@ -1,17 +1,15 @@
 const BAD_REQUEST = 400;
-const UNAUTHORIZED = 401;
 
 const tokenValidation = (req, res, next) => {
-  const { authorization } = req.headers;
-    if (!authorization) { 
-      return res.status(UNAUTHORIZED).json({ message: 'Token inválido' });
-    }
-    const tokenLength = 16; 
-    if (authorization.length !== tokenLength) {
-      return res.status(UNAUTHORIZED).json({ message: 'Token não encontrado' });
+  const token = req.headers.authorization;
+  if (!token || token === '') {
+    res.status(401).json({ message: 'Token não encontrado' });
+  }
+    if (token.length !== 16) {
+      res.status(401).json({ message: 'Token inválido' });
     }
     next();
-};
+  };
 
 const nameValidation = (req, res, next) => {
   const { name } = req.body;
@@ -80,4 +78,4 @@ module.exports = {
   ageValidation,
   talkValidation,
   watchedAtValidation,
-  rateValidation };
+  rateValidation }; 
