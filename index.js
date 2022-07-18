@@ -1,13 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const router = require('./talker');
-const { login, validateEmail, validatePassword } = require('./login');
+const crypto = require('crypto');
+const read = require('./read');
+const write = require('./write');
+const loginValidation = require('./login');
 const {
+  tokenValidation,
   nameValidation,
   ageValidation,
   talkValidation,
-  watchedAtValidation,
-  rateValidation } = require('./talkerValidation');
+  rateValidation,
+  watchedAtValidation, 
+} = require('./talkerValidation');
 
 const app = express();
 app.use(bodyParser.json());
@@ -18,14 +22,51 @@ app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
 
-app.use('/talker', router);
-app.post('/login', validateEmail, validatePassword, login);
+app.get('/talker', async (_req, res) => {
+    const talkers = await read();
+    console.log(talkers);
+    if (talkers.length === 0) {
+      return res.status(200).json([]);
+    }
+    return res.status(200).json(talkers);
+});
+
+app.get('/talker/search');
+
+app.get('/talker/:id', async (req, res) => {
+  const { id } = req.params;
+    const file = await read();
+    const talkers = file.find((talker) => talker.id === Number(id));
+    if (talkers) return res.status(200).json(talkers);
+    return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+});
+
+app.post('/login', loginValidation, (_req, res) => {
+  const token = crypto.randomBytes(8).toString('hex');
+    return res.status(200).json({ token });
+});
+
+app.use(
+  tokenValidation,
+  nameValidation,
+  ageValidation,
+  talkValidation,
+  rateValidation,
+  watchedAtValidation,
+  );
+
 app.post('/talker',
-nameValidation,
-ageValidation,
-talkValidation,
-watchedAtValidation,
-rateValidation);
+async (req, res) => {
+  const { name, age, talk } = req.body;
+  const talkers = await read();
+  const id = talkers.length + 1;
+
+  talkers.push({ name, age, id, talk: { ...talk } });
+
+  write(talkers);
+
+  res.status(201).json({ name, age, id, talk: { ...talk } });
+});
 
 app.listen(PORT, () => {
   console.log('Online');

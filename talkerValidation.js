@@ -1,15 +1,11 @@
 const BAD_REQUEST = 400;
 
 const tokenValidation = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token || token === '') {
-    res.status(401).json({ message: 'Token não encontrado' });
-  }
-    if (token.length !== 16) {
-      res.status(401).json({ message: 'Token inválido' });
-    }
-    next();
-  };
+  const { authorization } = req.headers;
+  if (!authorization) return res.status(401).json({ message: 'Token não encontrado' });
+  if (authorization.length !== 16) return res.status(401).json({ message: 'Token inválido' });
+  return next();
+};
 
 const nameValidation = (req, res, next) => {
   const { name } = req.body;
@@ -50,7 +46,7 @@ const watchedAtValidation = (req, res, next) => {
   if (!watchedAt) {
     return res.status(BAD_REQUEST).json({ message: 'O campo "watchedAt" é obrigatório' });
   }
-  const regex = !/^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const regex = /^(0?[1-9]|[12][0-9]|3[01])[/-](0?[1-9]|1[012])[/-]\d{4}$/;
   const validWatchAt = watchedAt.match(regex);
   if (!validWatchAt) {
     return res.status(BAD_REQUEST).json({
@@ -60,14 +56,13 @@ const watchedAtValidation = (req, res, next) => {
 };
 
 const rateValidation = (req, res, next) => {
-  const { talk: { rate } } = req.body;
-  const minimumRate = 1;
-  const maximumRate = 5;
-  if (rate < minimumRate || rate > maximumRate) {
-    return res.status(BAD_REQUEST).json({ message: 'O campo "rate" deve ser um inteiro de 1 à 5' });
-  }
+  const { rate } = req.body.talk;
   if (!rate) {
     return res.status(BAD_REQUEST).json({ message: 'O campo "rate" é obrigatório' });
+  }
+  const isValidRate = rate >= 1 && rate <= 5;
+  if (!isValidRate) {
+    return res.status(BAD_REQUEST).json({ message: 'O campo "rate" deve ser um inteiro de 1 à 5' });
   }
   next();
 };
