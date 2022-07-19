@@ -15,6 +15,7 @@ const {
 
 const app = express();
 app.use(bodyParser.json());
+
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
 // não remova esse endpoint, e para o avaliador funcionar
@@ -73,6 +74,13 @@ app.post('/talker',
     talkers[indexId] = { ...talkers[indexId], name, age, talk };
     await write(talkers);
     res.status(HTTP_OK_STATUS).json(talkers[indexId]);
+});
+
+app.delete('/talker/:id', async (req, res) => {
+  const { id } = req.params;
+  const talkers = await read();
+  await write(talkers.filter((talker) => talker.id !== Number(id)));
+  res.status(204).send();
 });
 
   app.listen(PORT, () => {
