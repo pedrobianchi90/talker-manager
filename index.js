@@ -31,7 +31,15 @@ app.get('/talker', async (_req, res) => {
   return res.status(200).json(talkers);
 });
 
-app.get('/talker/search');
+app.get('/talker/search', tokenValidation, async (req, res) => {
+  const { q } = req.query;
+  const talkers = await read();
+  if (!q) {
+    return res.status(200).json(talkers);
+  }
+  const result = talkers.filter((talker) => talker.name.includes(q));
+  return res.status(200).json(result);
+});
 
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
@@ -65,7 +73,7 @@ app.post('/talker',
     res.status(201).json({ name, age, id, talk: { ...talk } });
   });
 
-  app.put('/talker/:id',
+app.put('/talker/:id',
   async (req, res) => {
     const { id } = req.params;
     const talkers = await read();
@@ -74,15 +82,16 @@ app.post('/talker',
     talkers[indexId] = { ...talkers[indexId], name, age, talk };
     await write(talkers);
     res.status(HTTP_OK_STATUS).json(talkers[indexId]);
-});
+  });
 
 app.delete('/talker/:id', async (req, res) => {
   const { id } = req.params;
   const talkers = await read();
-  await write(talkers.filter((talker) => talker.id !== Number(id)));
+  const indexId = talkers.findIndex((item) => item.id === Number(id));
+  talkers.splice(indexId, 1);
   res.status(204).send();
 });
 
-  app.listen(PORT, () => {
-    console.log('Online');
-  });
+app.listen(PORT, () => {
+  console.log('Online');
+});
