@@ -23,12 +23,13 @@ const nameValidation = (req, res, next) => {
 const ageValidation = (req, res, next) => {
   const { age } = req.body;
   const minimumAge = 18;
-  if (!age) { 
+  if (!age) {
     return res.status(BAD_REQUEST).json({ message: 'O campo "age" é obrigatório' });
   }
   if (age < minimumAge) {
     return res.status(BAD_REQUEST).json({
-      message: 'A pessoa palestrante deve ser maior de idade' });
+      message: 'A pessoa palestrante deve ser maior de idade',
+    });
   }
   next();
 };
@@ -50,18 +51,22 @@ const watchedAtValidation = (req, res, next) => {
   const validWatchAt = watchedAt.match(regex);
   if (!validWatchAt) {
     return res.status(BAD_REQUEST).json({
-      message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"' });
+      message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"',
+    });
   }
   next();
 };
 
 const rateValidation = (req, res, next) => {
   const { rate } = req.body.talk;
+  if (rate === 0) {
+    return res.status(BAD_REQUEST).json({ message: 'O campo "rate" deve ser um inteiro de 1 à 5' });
+  }
   if (!rate) {
     return res.status(BAD_REQUEST).json({ message: 'O campo "rate" é obrigatório' });
   }
-  const isValidRate = rate >= 1 && rate <= 5;
-  if (!isValidRate) {
+  // const isValidRate = rate >= 1 && rate < 5 && rate === 0;
+  if (rate < 1 || rate > 5) {
     return res.status(BAD_REQUEST).json({ message: 'O campo "rate" deve ser um inteiro de 1 à 5' });
   }
   next();
@@ -73,4 +78,5 @@ module.exports = {
   ageValidation,
   talkValidation,
   watchedAtValidation,
-  rateValidation }; 
+  rateValidation,
+}; 

@@ -54,6 +54,15 @@ app.post('/login', loginValidation, (_req, res) => {
   return res.status(200).json({ token });
 });
 
+app.delete('/talker/:id', tokenValidation, async (req, res) => {
+  const { id } = req.params;
+  const talkers = await read();
+  const indexId = talkers.findIndex((item) => item.id === Number(id));
+  talkers.splice(indexId, 1);
+  write(talkers);
+  res.status(204).json();
+});
+
 app.use(
   tokenValidation,
   nameValidation,
@@ -83,14 +92,6 @@ app.put('/talker/:id',
     await write(talkers);
     res.status(HTTP_OK_STATUS).json(talkers[indexId]);
   });
-
-app.delete('/talker/:id', async (req, res) => {
-  const { id } = req.params;
-  const talkers = await read();
-  const indexId = talkers.findIndex((item) => item.id === Number(id));
-  talkers.splice(indexId, 1);
-  res.status(204).send();
-});
 
 app.listen(PORT, () => {
   console.log('Online');
